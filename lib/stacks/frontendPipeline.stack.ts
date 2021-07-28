@@ -13,27 +13,14 @@ import * as origins from "@aws-cdk/aws-cloudfront-origins";
 
 export class FrontendPipelineStack extends Stack {
   constructor(app: Construct, stackId: string, props?: StackProps) {
-    super(app, stackId);
+    super(app, stackId, props);
 
     const bucketWebsite: IBucket = new Bucket(
       this,
       "ConnectoFrontendBucketId",
       {
-        bucketName: "ConnectoFrontendBucket",
+        bucketName: "connecto-frontend-bucket",
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-        cors: [
-          {
-            allowedOrigins: ["*"],
-            allowedMethods: [
-              HttpMethods.GET,
-              HttpMethods.HEAD,
-              HttpMethods.DELETE,
-              HttpMethods.POST,
-              HttpMethods.PUT,
-            ],
-            allowedHeaders: ["*"],
-          },
-        ],
       }
     );
 
@@ -74,9 +61,7 @@ export class FrontendPipelineStack extends Stack {
           owner: "zeroandoneme",
           repo: "devops_lab_react_app",
           branch: "master",
-          // oauthToken: SecretValue.secretsManager("github_token"),
-          //@ts-ignore
-          oauthToken: "ca4ebd5de2b3657bd178c80f84e863dce71dc6b4",
+          oauthToken: SecretValue.secretsManager("github_token"),
           output: outputSources,
           trigger: CodePipelineAction.GitHubTrigger.WEBHOOK,
         }),
