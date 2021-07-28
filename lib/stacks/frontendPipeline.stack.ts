@@ -74,7 +74,9 @@ export class FrontendPipelineStack extends Stack {
           owner: "zeroandoneme",
           repo: "devops_lab_react_app",
           branch: "master",
-          oauthToken: SecretValue.secretsManager("github_token"),
+          // oauthToken: SecretValue.secretsManager("github_token"),
+          //@ts-ignore
+          oauthToken: "ca4ebd5de2b3657bd178c80f84e863dce71dc6b4",
           output: outputSources,
           trigger: CodePipelineAction.GitHubTrigger.WEBHOOK,
         }),
@@ -89,9 +91,6 @@ export class FrontendPipelineStack extends Stack {
           project: new CodeBuild.PipelineProject(this, "BuildFEId", {
             buildSpec:
               CodeBuild.BuildSpec.fromSourceFilename("./buildspec.yml"),
-            environment: {
-              computeType: CodeBuild.ComputeType.MEDIUM,
-            },
           }),
           input: outputSources,
           outputs: [outputWebsite],
@@ -102,7 +101,6 @@ export class FrontendPipelineStack extends Stack {
     pipeline.addStage({
       stageName: "Deploy",
       actions: [
-        // AWS CodePipeline action to deploy CRA website to S3
         new CodePipelineAction.S3DeployAction({
           actionName: "Website",
           input: outputWebsite,
