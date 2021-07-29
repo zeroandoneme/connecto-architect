@@ -1,4 +1,4 @@
-import { Construct, Stack, StackProps, SecretValue } from "@aws-cdk/core";
+import { Construct, Stack, StackProps } from "@aws-cdk/core";
 import * as CodePipelineAction from "@aws-cdk/aws-codepipeline-actions";
 import * as CodeBuild from "@aws-cdk/aws-codebuild";
 import * as CodePipeline from "@aws-cdk/aws-codepipeline";
@@ -21,6 +21,19 @@ export class FrontendPipelineStack extends Stack {
       {
         bucketName: "connecto-frontend-bucket",
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+        cors: [
+          {
+            allowedOrigins: ["*"],
+            allowedMethods: [
+              HttpMethods.GET,
+              HttpMethods.HEAD,
+              HttpMethods.DELETE,
+              HttpMethods.POST,
+              HttpMethods.PUT,
+            ],
+            allowedHeaders: ["*"],
+          },
+        ],
       }
     );
 
@@ -61,7 +74,9 @@ export class FrontendPipelineStack extends Stack {
           owner: "zeroandoneme",
           repo: "devops_lab_react_app",
           branch: "master",
-          oauthToken: SecretValue.secretsManager("github_token"),
+          //@ts-ignore
+          // github persona token
+          oauthToken: "*****",
           output: outputSources,
           trigger: CodePipelineAction.GitHubTrigger.WEBHOOK,
         }),

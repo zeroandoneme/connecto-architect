@@ -5,6 +5,6 @@ import * as cdk from "@aws-cdk/core";
 import { FrontendPipelineStack } from "../lib/stacks/frontendPipeline.stack";
 
 const app = new cdk.App();
-const envEUDev = { account: "157000482341", region: "eu-west-1" };
+const env = { account: "account_id", region: "region" };
 
-new FrontendPipelineStack(app, "FrontendPipelineStack", { env: envEUDev });
+new FrontendPipelineStack(app, "FrontendPipelineStack", { env });
