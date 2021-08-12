@@ -15,11 +15,12 @@ export class FrontendPipelineStack extends Stack {
   constructor(app: Construct, stackId: string, props?: StackProps) {
     super(app, stackId, props);
 
+    // Create S3 bucket
     const bucketWebsite: IBucket = new Bucket(
       this,
-      "ConnectoFrontendBucketId",
+      "ConnectoFrontendBucketTestV1Id",
       {
-        bucketName: "connecto-frontend-bucket",
+        bucketName: "connecto-frontend-bucket-test-v1",
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
         cors: [
           {
@@ -37,7 +38,8 @@ export class FrontendPipelineStack extends Stack {
       }
     );
 
-    new cloudfront.Distribution(this, "bucketWebsiteCDN", {
+    // Create cloud front
+    const cdn = new cloudfront.Distribution(this, "bucketWebsiteCDN", {
       defaultBehavior: { origin: new origins.S3Origin(bucketWebsite) },
       defaultRootObject: "index.html",
       errorResponses: [
@@ -54,8 +56,10 @@ export class FrontendPipelineStack extends Stack {
       ],
     });
 
+    // Create Pipeline
     const outputSources = new CodePipeline.Artifact();
     const outputWebsite = new CodePipeline.Artifact();
+    const outputCDN = new CodePipeline.Artifact();
 
     const pipeline = new CodePipeline.Pipeline(
       this,
@@ -76,7 +80,7 @@ export class FrontendPipelineStack extends Stack {
           branch: "master",
           //@ts-ignore
           // github persona token
-          oauthToken: "*****",
+          oauthToken: "******",
           output: outputSources,
           trigger: CodePipelineAction.GitHubTrigger.WEBHOOK,
         }),
@@ -105,6 +109,29 @@ export class FrontendPipelineStack extends Stack {
           actionName: "Website",
           input: outputWebsite,
           bucket: bucketWebsite,
+        }),
+      ],
+    });
+
+    pipeline.addStage({
+      stageName: "InvalidateCDNCache",
+      actions: [
+        new CodePipelineAction.CodeBuildAction({
+          actionName: "InvalidateCache",
+          project: new CodeBuild.PipelineProject(this, "InvalidateCacheId", {
+            buildSpec: CodeBuild.BuildSpec.fromObject({
+              version: "0.2",
+              phases: {
+                build: {
+                  commands: [
+                    `aws cloudfront create-invalidation --distribution-id ${cdn.distributionId} --paths "/*"`,
+                  ],
+                },
+              },
+            }),
+          }),
+          input: outputSources,
+          outputs: [outputCDN],
         }),
       ],
     });
