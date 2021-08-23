@@ -40,7 +40,10 @@ export class FrontendPipelineStack extends Stack {
 
     // Create cloud front
     const cdn = new cloudfront.Distribution(this, "bucketWebsiteCDN", {
-      defaultBehavior: { origin: new origins.S3Origin(bucketWebsite) },
+      defaultBehavior: {
+        origin: new origins.S3Origin(bucketWebsite),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
       defaultRootObject: "index.html",
       errorResponses: [
         {
